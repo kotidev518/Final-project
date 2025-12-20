@@ -613,7 +613,7 @@ async def initialize_data():
             "course_id": "course-1",
             "title": "Control Flow and Loops",
             "description": "Master if statements and loops",
-            "url": "https://storage.googleapis.com/sample-videos/python-control.mp4",
+            "url": "https://youtu.be/38svC3U7hVo?si=XbgGc5vqNrCML8ZQ",
             "duration": 540,
             "difficulty": "Easy",
             "topics": ["Python", "Programming"],
