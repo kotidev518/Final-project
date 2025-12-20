@@ -1,0 +1,151 @@
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { Toaster } from '@/components/ui/sonner';
+import axios from 'axios';
+import '@/App.css';
+
+// Pages
+import LandingPage from '@/pages/LandingPage';
+import AuthPage from '@/pages/AuthPage';
+import DashboardPage from '@/pages/DashboardPage';
+import CoursesPage from '@/pages/CoursesPage';
+import CourseDetailPage from '@/pages/CourseDetailPage';
+import VideoPlayerPage from '@/pages/VideoPlayerPage';
+import AnalyticsPage from '@/pages/AnalyticsPage';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  return isAuthenticated ? children : <Navigate to="/auth" replace />;
+};
+
+// Public Route Component (redirects to dashboard if authenticated)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+};
+
+// Initialize Data Component
+const InitializeData = () => {
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        // Check if data needs to be initialized
+        const response = await axios.post(`${API}/init-data`);
+        console.log('Data initialization:', response.data);
+      } catch (error) {
+        console.error('Failed to initialize data:', error);
+      }
+    };
+    initData();
+  }, []);
+
+  return null;
+};
+
+function AppContent() {
+  return (
+    <div className="App">
+      <InitializeData />
+      <Routes>
+        {/* Public Routes */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <LandingPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/auth"
+          element={
+            <PublicRoute>
+              <AuthPage />
+            </PublicRoute>
+          }
+        />
+
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <CoursesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/course/:courseId"
+          element={
+            <ProtectedRoute>
+              <CourseDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/video/:videoId"
+          element={
+            <ProtectedRoute>
+              <VideoPlayerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Toaster position="top-right" richColors />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;
